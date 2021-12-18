@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>Research@Arcon</title>
+	<meta name="description" content="">
+	<meta name="author" content="Arcon">
+
+	<!-- HTML5 shim, for IE6-8 support of HTML elements -->
+	<!--[if lt IE 9]>
+		<script src="/theme/html5.js"></script>
+	<![endif]-->
+
+	<!-- Styles -->
+	<link href="/theme/bootstrap.min.css" rel="stylesheet">
+	<link href="/theme/local.css" rel="stylesheet">
+	<link href="/theme/pygments.css" rel="stylesheet">
+
+	<!-- Feeds -->
+	<link href="/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="Research@Arcon Atom Feed" />
+
+
+
+
+</head>
+<body>
+	<div class="topbar">
+	  <div class="topbar-inner">
+		<div class="container-fluid">
+		  <a class="brand" href="/">Research@Arcon</a>
+			<ul class="nav">
+						<li><a href="/pages/about-us.html">About Us</a></li>
+						<li><a href="/pages/projects.html">Projects</a></li>
+					<li class="active"><a href="/category/blog.html">Blog</a></li>
+			</ul>
+			<p class="pull-right"><a href="/archives.html">[archives]</a> <a href="/tags.html">[tags]</a></p>
+		</div>
+	  </div>
+	</div>
+
+	<div class="container-fluid">
+	  <div class="sidebar">
+		<div class="well">
+			<h3>Blogroll</h3>
+			<ul>
+				<li><a href="https://www.arcon.com/">Arcon Corporation</a></li>
+			</ul>
+			<div class="social">
+			<h3>Social</h3>
+			<ul>
+				<li><a href="https://www.github.com/arconcorporation">Github</a></li>
+			</ul>
+			</div>
+		</div>
+	  </div>
+	  <div class="content">
+	<div class='article'>
+		<div class="page-header"><h1>Object detection on FLIR dataset using MaskRCNN</h1></div>
+		<div class="well small">Permalink: <a class="more" href="/detectron2-flir.html">2021-12-14 00:00:00-05:00</a>
+by <a class="url fn" href="/author/saurav-tuladhar.html">Saurav Tuladhar </a>
+ in <a href="/category/blog.html">Blog</a>
+tags: <a href="/tag/detectron2.html">detectron2</a> <a href="/tag/r-cnn.html">r-cnn</a> <a href="/tag/dl.html">dl</a> <a href="/tag/flir.html">flir</a> </div>
+		<div><p>In this post, we discuss some of the results we obtained when applying <a href="https://arxiv.org/abs/1703.06870">MaskRCNN</a> on infra-red/thermal imagery. We choose to use the freely available <a href="https://www.flir.com/oem/adas/adas-dataset-form/">FLIR dataset</a> for this task. The FLIR dataset contains annotated contains images accquired using RGB and thermal cameras mounted infront of a vehicle. The images are frames extracted from video recordings. The recordings are from Santa Barbara area during the month of May. Four classes of objects are identified and annotated. </p>
+<p>FLIR provides their benchmark bbox mAP scores obtained using RefineDetect512 detector. The table compares our detection bbox mAP scores obtained using MaskRCNN detector. We used the MaskRCNN implementation available in <a href="https://github.com/facebookresearch/detectron2">Detectron2</a> platform.</p>
+<table>
+<thead>
+<tr>
+<th>Category</th>
+<th>FLIR Benchmark</th>
+<th>Pretrained on MS-COCO</th>
+<th>Trained on FLIR</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Person</td>
+<td>79.4</td>
+<td>32.41</td>
+<td>44.693</td>
+</tr>
+<tr>
+<td>Bicycle</td>
+<td>58.0</td>
+<td>11.58</td>
+<td>21.904</td>
+</tr>
+<tr>
+<td>Car</td>
+<td>85.6</td>
+<td>34.10</td>
+<td>54.557</td>
+</tr>
+</tbody>
+</table>
+<p>Analyzing the mAP scores in the table above, we notice that the baseline MaskRCNN trained on MS-COCO only performs poorly compared to the benchmark. However upon training on the FLIR training-set, the mAP scores improve as expected.</p>
+<p>The composite figure below compares the labeled truth (left column), detected objects (center column) and RGB view (right column) for two image frames.</p>
+<p><img src="./images/flir_maskRCNN_sample1.png" alt="maskRCNN detection comparison" style="width:1000px;"/></p></div>
+	</div>
+		<footer>
+		  <p>Powered by <a href="http://getpelican.com/">Pelican</a>. Theme based on <a href="http://twitter.github.com/bootstrap/">Twitter Bootstrap</a>.</p>
+		  <p>&copy; Arcon</p>
+		</footer>
+	  </div>
+
+	</div>
+</body>
+</html>

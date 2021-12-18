@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>Research@Arcon</title>
+	<meta name="description" content="">
+	<meta name="author" content="Arcon">
+
+	<!-- HTML5 shim, for IE6-8 support of HTML elements -->
+	<!--[if lt IE 9]>
+		<script src="/theme/html5.js"></script>
+	<![endif]-->
+
+	<!-- Styles -->
+	<link href="/theme/bootstrap.min.css" rel="stylesheet">
+	<link href="/theme/local.css" rel="stylesheet">
+	<link href="/theme/pygments.css" rel="stylesheet">
+
+	<!-- Feeds -->
+	<link href="/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="Research@Arcon Atom Feed" />
+
+
+
+
+</head>
+<body>
+	<div class="topbar">
+	  <div class="topbar-inner">
+		<div class="container-fluid">
+		  <a class="brand" href="/">Research@Arcon</a>
+			<ul class="nav">
+						<li><a href="/pages/about-us.html">About Us</a></li>
+						<li><a href="/pages/projects.html">Projects</a></li>
+					<li class="active"><a href="/category/blog.html">Blog</a></li>
+			</ul>
+			<p class="pull-right"><a href="/archives.html">[archives]</a> <a href="/tags.html">[tags]</a></p>
+		</div>
+	  </div>
+	</div>
+
+	<div class="container-fluid">
+	  <div class="sidebar">
+		<div class="well">
+			<h3>Blogroll</h3>
+			<ul>
+				<li><a href="https://www.arcon.com/">Arcon Corporation</a></li>
+			</ul>
+			<div class="social">
+			<h3>Social</h3>
+			<ul>
+				<li><a href="https://www.github.com/arconcorporation">Github</a></li>
+			</ul>
+			</div>
+		</div>
+	  </div>
+	  <div class="content">
+	<div class='article'>
+		<div class="page-header"><h1>Reproducing metrics of R-CNN models in Detectron2 Model Zoo</h1></div>
+		<div class="well small">Permalink: <a class="more" href="/reproduce-rcnn-metrics.html">2020-09-29 00:00:00-04:00</a>
+by <a class="url fn" href="/author/saurav-tuladhar.html">Saurav Tuladhar </a>
+ in <a href="/category/blog.html">Blog</a>
+tags: <a href="/tag/detectron2.html">detectron2</a> <a href="/tag/r-cnn.html">r-cnn</a> <a href="/tag/dl.html">dl</a> </div>
+		<div><p>Detectron2 provides metrics for all models in the Model zoo. For this project, we are using the Mask R-CNN models trained on MS COCO dataset. As a part adapting the pre-trained models for your specific use, we wanted to verify the metrics advertised in the Model zoo page. For the verification task, I tested two pretrained models. The annotation (box) and segmentation (mask) AP metrics for the two models are:</p>
+<table>
+<thead>
+<tr>
+<th align="left">Model</th>
+<th align="left">bbox-AP</th>
+<th>mask-AP</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">R50-FPN-3x</td>
+<td align="left">41.0</td>
+<td>37.2</td>
+</tr>
+<tr>
+<td align="left">R50-FPN-1x</td>
+<td align="left">38.6</td>
+<td>35.2</td>
+</tr>
+</tbody>
+</table>
+<p>Code to reproduce the metrics is straight forward as shown below. First we configure Detectron2 to load the pre-trained weights to the model under test.</p>
+<div class="highlight"><pre><span></span><code><span class="n">cfg</span> <span class="o">=</span> <span class="n">get_cfg</span><span class="p">()</span>
+<span class="n">cfg</span><span class="o">.</span><span class="n">merge_from_file</span><span class="p">(</span><span class="n">model_zoo</span><span class="o">.</span><span class="n">get_config_file</span><span class="p">(</span><span class="s2">&quot;COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_1x.yaml&quot;</span><span class="p">))</span>
+<span class="c1"># Find a model from detectron2&#39;s model zoo. You can use the https://dl.fbaipublicfiles... url as well</span>
+<span class="n">cfg</span><span class="o">.</span><span class="n">MODEL</span><span class="o">.</span><span class="n">WEIGHTS</span> <span class="o">=</span> <span class="n">model_zoo</span><span class="o">.</span><span class="n">get_checkpoint_url</span><span class="p">(</span><span class="s2">&quot;COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_1x.yaml&quot;</span><span class="p">)</span>
+<span class="n">predictor</span> <span class="o">=</span> <span class="n">DefaultPredictor</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Then we can use Detectron2's builtin <code>COCOEvaluator</code> to evaluate our model and compute the metrics on COCO 2017 validation set,</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">detectron2.evaluation</span> <span class="kn">import</span> <span class="n">COCOEvaluator</span><span class="p">,</span> <span class="n">inference_on_dataset</span>
+<span class="kn">from</span> <span class="nn">detectron2.data</span> <span class="kn">import</span> <span class="n">build_detection_test_loader</span>
+<span class="n">evaluator</span> <span class="o">=</span> <span class="n">COCOEvaluator</span><span class="p">(</span><span class="s2">&quot;coco_2017_val&quot;</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">output_dir</span><span class="o">=</span><span class="s2">&quot;./output/&quot;</span><span class="p">)</span>
+<span class="n">val_loader</span> <span class="o">=</span> <span class="n">build_detection_test_loader</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="s2">&quot;coco_2017_val&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">inference_on_dataset</span><span class="p">(</span><span class="n">predictor</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">val_loader</span><span class="p">,</span> <span class="n">evaluator</span><span class="p">))</span>
+</code></pre></div>
+
+<p>We tested two trained Mask R-CNN models from the model zoo and evaluated their metrics on the COCO 2017 validation set. The testing reproduced the exact values for the box AP and mask AP as in the table above. Below is an abridged verison of the model evaluation output for R50-FPN 1x  and R50-FPN 3x model. The computed metrics are in line 6 and 14.</p>
+<p><strong>Metrics for R50-FPN-3x</strong></p>
+<div class="highlight"><pre><span></span><code>Running per image evaluation...
+Evaluate annotation type *bbox*
+COCOeval_opt.evaluate() finished in 12.82 seconds.
+Accumulating evaluation results...
+COCOeval_opt.accumulate() finished in 1.37 seconds.
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.410
+
+Running per image evaluation...
+Evaluate annotation type *segm*
+COCOeval_opt.evaluate() finished in 16.08 seconds.
+Accumulating evaluation results...
+COCOeval_opt.accumulate() finished in 1.36 seconds.
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.372
+</code></pre></div>
+
+<p><strong>Metrics for R50-FPN-1x</strong></p>
+<div class="highlight"><pre><span></span><code>Running per image evaluation...
+Evaluate annotation type *bbox*
+COCOeval_opt.evaluate() finished in 9.37 seconds.
+Accumulating evaluation results...
+COCOeval_opt.accumulate() finished in 1.18 seconds.
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.386
+
+Evaluate annotation type *segm*
+COCOeval_opt.evaluate() finished in 11.96 seconds.
+Accumulating evaluation results...
+COCOeval_opt.accumulate() finished in 1.17 seconds.
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.352
+</code></pre></div></div>
+	</div>
+		<footer>
+		  <p>Powered by <a href="http://getpelican.com/">Pelican</a>. Theme based on <a href="http://twitter.github.com/bootstrap/">Twitter Bootstrap</a>.</p>
+		  <p>&copy; Arcon</p>
+		</footer>
+	  </div>
+
+	</div>
+</body>
+</html>
